@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Image Quiz</title>
+<style>
+* { box-sizing: border-box; margin:0; padding:0; }
+
+body {
+  font-family: Arial, sans-serif;
+  background-image: url("images/bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  /* Fixed layout: stack items vertically and ensure it fills the screen */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  color: #222;
+  line-height: 1.6;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.4);
+  z-index: -1;
+}
+
+#app {
+  background: rgba(255,255,255,0.95);
+  width: 900px;
+  max-width: 95%;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: fadeIn 0.6s ease;
+  /* Centering the app box and giving it space from the footer */
+  margin: auto;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.progress-container {
+  width: 100%;
+  height: 12px;
+  background: #eee;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #667eea;
+  transition: width 0.4s ease;
+  border-radius: 10px;
+}
+
+h2#question {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.answers {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.option {
+  border: 2px solid #ddd;
+  border-radius: 16px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: #fafafa;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.option:hover {
+  transform: scale(1.05);
+  border-color: #667eea;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.option img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+footer {
+  width: 100%;
+  background-color: #ff7f00;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  font-size: 20px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: auto; /* Pushes footer to bottom of the flex container */
+}
+
+footer img {
+  height: 80px; 
+  width: auto;
+}
+
+footer .footer-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex: 1;
+}
+
+footer .footer-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+footer .footer-links a:hover {
+  text-decoration: underline;
+}
+
+.footer-copy {
+  font-size: 14px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#result {
+  display: none;
+  text-align: left;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.result-card {
+  background: #f7f8ff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  animation: fadeInCard 0.5s ease forwards;
+}
+
+.result-card h3 {
+  margin-top: 0;
+  color: #3343c1;
+}
+
+.result-card p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.result-card ul {
+  margin: 8px 0 0 20px;
+  padding: 0;
+}
+
+.result-card li {
+  margin-bottom: 4px;
+}
+
+.result-card a {
+  display: inline-block;
+  margin-top: 10px;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.result-card a:hover { text-decoration: underline; }
+
+button {
+  margin-top: 15px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #667eea;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover { background: #5563c1; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInCard { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: translateY(0);} }
+
+@media (max-width: 650px) {
+  .answers { grid-template-columns: 1fr; }
+  .option img { height: 150px; }
+  footer { flex-direction: column; text-align: center; }
+  .footer-copy { text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="quiz">
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <h2 id="question"></h2>
+    <div class="answers" id="answers"></div>
+  </div>
+
+  <div id="result">
+    <h2>Танд тохирох мэргэжлүүд:</h2>
+    <p>Өөрт тохирсон хариултаа олохыг хүсвэл дэлгэрэнгүй мэдээлэл дээр дарна уу.</p>
+    <div id="resultText"></div>
+    <button onclick="restartQuiz()">Дахин эхлэх</button>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">
+    <img src="images/logo.png" alt="Logo">
+  </div>
+  <div class="footer-links">
+    <a href="https://www.facebook.com/badrakhenergy/" target="_blank">Facebook</a>
+    <a href="https://badrakhenergy.com/%d0%b0%d0%b6%d0%bb%d1%8b%d0%bd-%d0%b1%d0%b0%d0%b9%d1%80/">Ажлын байр</a>
+    <a href="https://badrakhenergy.com/%d1%82%d0%b5%d0%bd%d0%b4%d0%b5%d1%80-%d0%b1%d0%be%d0%bb%d0%be%d0%bd-%d0%b7%d0%b0%d1%80/">Тендер</a>
+    <a href="https://badrakhenergy.com/%D1%82%D0%B5%D0%BD%D0%B4%D0%B5%D1%80-%D0%B1%D0%BE%D0%BB%D0%BE%D0%BD-%D0%B7%D0%B0%D1%80/">Холбоо барих</a>
+    <a href="https://badrakhenergy.com/%d1%85%d1%83%d1%83%d0%bb%d1%8c-%d1%8d%d1%80%d1%85-%d0%b7%d2%af%d0%b9%d0%bd-%d0%bc%d1%8d%d0%b4%d1%8d%d1%8d%d0%bb%d1%8d%d0%bb/">Хууль эрх зүйн мэдээлэл</a>
+  </div>
+  <div class="footer-copy">
+    © 2026 Бадрах Энержи
+  </div>
+</footer>
+
+<script>
+const questions = [
+  {q:"1. Та аль төрлийн ажилд илүү дуртай вэ?", a:[
+    {text:"Техник, тоног төхөөрөмж", img:"images/11.jpg", type:"A"},
+    {text:"Судалгаа, анализ", img:"images/12.jpg", type:"B"},
+    {text:"Аюулгүй байдал, байгаль орчин", img:"images/13.jpg", type:"C"},
+    {text:"Хүмүүс, харилцаа", img:"images/14.jpg", type:"D"}]},
+  {q:"2. Та ямар орчинд ажиллах сонирхолтой вэ?", a:[
+    {text:"Уурхайн талбай", img:"images/15.jpg", type:"A"},
+    {text:"Лаборатори/оффис", img:"images/16.jpg", type:"B"},
+    {text:"Хяналт, мониторинг", img:"images/17.jpg", type:"C"},
+    {text:"Холимог орчин", img:"images/24.jpg", type:"D"}]},
+  {q:"3. Уурхайн талбай дээр шинэ тэсэлгээ хийх бүсийн ойролцоо ус зайлуулах суваг бөглөрч, шаварлаг ус хуримтлагджээ. Хэрэв энэ байдлыг анхаарахгүй орхивол техник гацах, хөрсний нуралт үүсэх, аюулгүй ажиллагаанд эрсдэл учрах магадлалтай. Та багийн ахлагч бол энэ нөхцөлд яах вэ?", a:[
+    {text:"Шууд шийдэл олно", img:"images/31.jpg", type:"A"},
+    {text:"Судалж тооцоолно", img:"images/32.jpg", type:"B"},
+    {text:"Эрсдэлийг шалгана", img:"images/33.jpg", type:"C"},
+    {text:"Багтайгаа ярилцана", img:"images/34.jpg", type:"D"}]},
+  {q:"4. Таны давуу тал?", a:[
+    {text:"Техникийн ур чадвар", img:"images/41.jpg", type:"A"},
+    {text:"Аналитик сэтгэлгээ", img:"images/42.jpg", type:"B"},
+    {text:"Нарийвчлал", img:"images/43.jpg", type:"C"},
+    {text:"Харилцаа", img:"images/44.jpeg", type:"D"}]},
+  {q:"5. Танай байгууллага шинэ технологи нэвтрүүлж, үйлдвэрлэлийн үр ашгийг нэмэгдүүлэх туршилтын төсөл эхлүүлэх гэж байна...", a:[
+    {text:"<b>Инноваци:</b><br>Та шинэ технологийг туршиж, боломжийг нь хурдан ашиглахыг дэмжинэ. Шинэ шийдэл туршиж, байгууллагыг урагшлуулах нь хамгийн чухал гэж үзнэ.", img:"images/51.jpg", type:"A"},
+    {text:"<b>Шинжлэх ухаан:</b><br>Та туршилтын өгөгдөл, судалгаа, хэмжилт, баталгаатай үр дүнд үндэслэн шийдвэр гаргах ёстой гэж үзнэ. Нотолгоонд суурилсан арга барилыг нэн тэргүүнд тавина.", img:"images/52.jpg", type:"B"},
+    {text:"<b>Аюулгүй байдал</b><br>Та шинэ технологи нэвтрүүлэхээс өмнө ажилчдын аюулгүй байдал, эрсдэлийн үнэлгээ, хамгаалах арга хэмжээг бүрэн хангахыг чухалчилна.", img:"images/53.jpg", type:"C"},
+    {text:"<b>Ил тод байдал:</b><br>Та ажилчид болон орон нутгийн иргэдэд мэдээллийг нээлттэй хүргэж, эрсдэл, давуу тал, төлөвлөгөөг ил тод тайлбарлах нь чухал гэж үзнэ.", img:"images/54.jpg", type:"D"}]},
+  {q:"6. Танд 2 долоо хоногийн дотор дуусгах чухал ажил ирлээ. Хугацаа шахуу, нөөц хязгаарлагдмал, алдаа гарвал алдагдал хүлээх эрсдэлтэй. Багийн гишүүдийн туршлага харилцан адилгүй бөгөөд ажлын ачаалал өндөр байна. Та энэ нөхцөлд ажлаа юунд төвлөрүүлж зохион байгуулах вэ?", a:[
+    {text:"<b>Бодит гүйцэтгэл</b><br>Та ажилчид болон орон нутгийн иргэдэд мэдээллийг нээлттэй хүргэж, эрсдэл, давуу тал, төлөвлөгөөг ил тод тайлбарлах нь хамгийн чухал гэж үзнэ. ", img:"images/61.jpg", type:"A"},
+    {text:"<b>Нарийн тооцоо</b><br>Та хугацаа, нөөц, ажлын дарааллыг нарийвчлан тооцоолж, алдаа гарах магадлалыг багасгах төлөвлөлт хийнэ. Бүх зүйл тооцоотой, үндэслэлтэй байх ёстой гэж үзнэ.", img:"images/62.jpg", type:"B"},
+    {text:"<b>Эрсдэлгүй ажиллагаа</b><br>Та яаралтай байсан ч чанар, аюулгүй байдал, алдаа гарах эрсдэлийг хамгийн бага түвшинд барихад анхаарна. Аюулгүй, алдаагүй” гүйцэтгэл чухал гэж үзнэ.", img:"images/63.jpg", type:"C"},
+    {text:"<b>Багийн уур амьсгал</b><br>Та багийн гишүүдийн ачааллыг тэнцвэржүүлж, урам зориг, харилцаа, хамтын ажиллагааг хадгалахыг чухалчилна. Сайн уур амьсгал сайн үр дүн авчирна гэж үзнэ.", img:"images/64.jpg", type:"D"}]},
+  {q:"7. Таньд аль нь сонирхолтой вэ?", a:[
+    {text:"Машин механизм", img:"images/71.jpg", type:"A"},
+    {text:"Өгөгдөл, тайлан", img:"images/72.jpg", type:"B"},
+    {text:"Байгаль орчны хяналт", img:"images/73.jpg", type:"C"},
+    {text:"Олон нийттэй ажиллах", img:"images/74.jpg", type:"D"}]},
+  {q:"8. Танай байгууллага шинэ уул уурхайн төслийг эхлүүлэх гэж байна. Төсөл нь орон нутгийн иргэдэд ажлын байр бий болгох, дэд бүтэц сайжруулах боломжтой ч байгаль орчин, ажилчдын аюулгүй байдал, урт хугацааны нөлөөлөл зэрэг олон хүчин зүйлсийг анхаарах шаардлагатай. Та энэ төсөл дээр ажиллахдаа юуг хамгийн чухал гэж үзэх вэ?", a:[
+    {text:"<b>Аюулгүй орчин</b><br>Та ажилчдын эрүүл мэнд, хөдөлмөрийн аюулгүй байдал, эрсдэлгүй ажиллагааг нэн тэргүүнд тавина. Хүн бүр осолгүй, эрсдэлгүй ажиллах орчныг бүрдүүлэх нь хамгийн чухал гэж үзнэ.", img:"images/81.jpg", type:"A"},
+    {text:"<b>Мэргэжлийн өсөлт</b><br>Та энэ төслийг ажилтнуудын ур чадвар хөгжих, шинэ технологи суралцах, мэргэжлийн туршлага нэмэгдүүлэх боломж гэж харна.", img:"images/82.jpg", type:"B"},
+    {text:"<b>Тогтвортой хөгжил</b><br>Та байгаль орчинд сөрөг нөлөө багатай, урт хугацаанд нийгэм, эдийн засагт ашигтай шийдлүүдийг чухалчилна.", img:"images/83.jpg", type:"C"},
+    {text:"<b>Нийгмийн нөлөө</b><br>Та орон нутгийн иргэдийн амьдралд эерэг нөлөө үзүүлэх, ил тод харилцаа бий болгох, нийгмийн итгэлийг нэмэгдүүлэхийг хамгийн чухал гэж үзнэ.", img:"images/84.jpg", type:"D"}]},
+  {q:"9. Та өөрийгөө хэрхэн тодорхойлох вэ?", a:[
+    {text:"Техник сэтгэлгээтэй", img:"images/91.jpg", type:"A"},
+    {text:"Судлаач", img:"images/92.jpg", type:"B"},
+    {text:"Хариуцлагатай", img:"images/93.jpg", type:"C"},
+    {text:"Манлайлагч", img:"images/94.jpg", type:"D"}]}
+];
+
+const results = {
+  A:{title:"Уурхайн оператор / Техникч", desc:"Техник, тоног төхөөрөмжтэй бодитоор ажиллах, аюулгүй ажиллагааг чанд мөрдөж, үйлдвэрлэлийн тасралтгүй ажиллагааг хангах чадвартай.", points:["Техник тоног төхөөрөмжтэй ажиллах дуртай","Аюулгүй ажиллагааг чанд мөрддөг","Хурдан шийдвэр гаргадаг","Талбай дээр бодит үр дүн гаргадаг"], link:"more.html"},
+  B:{title:"Геологич / Уул уурхайн инженер", desc:"Мэдлэг, шинжлэх ухаанд суурилсан шийдвэр гаргагч. Шинжлэх ухаан, өгөгдөл, анализд суурилж шийдвэр гаргадаг.", points:["Судалгаа анализ хийх дуртай","Логик сэтгэлгээ өндөр","Нарийн тооцоо хийдэг","Стратеги төлөвлөлт сайн"], link:"more.html"},
+  C:{title:"ХАБЭА / Байгаль орчны мэргэжилтэн", desc:"Аюулгүй байдал, байгаль орчны хамгаалал-ыг уул уурхайн салбарын салшгүй хэсэг гэж үздэг хариуцлагатай.", points:["Эрсдэл илрүүлэх чадвартай","Аюулгүй байдлыг нэн тэргүүнд тавьдаг","Стандарт дүрэм мөрддөг","Тогтвортой хөгжлийг дэмждэг"], link:"more.html"},
+  D:{title:"Хүний нөөц / Олон нийттэй харилцах", desc:"Хүмүүс ба орон нутгийг холбох гүүр. Хүмүүстэй харилцдаг, баг удирддаг, итгэлцэл бий болгодог манлайлагч.", points:["Хүмүүстэй сайн харилцдаг","Баг удирдах чадвартай","Итгэлцэл бий болгодог","Ил тод байдлыг чухалчилдаг"], link:"more.html"}
+};
+
+let current=0;
+let score={A:0,B:0,C:0,D:0};
+
+function updateProgress(){document.getElementById("progressBar").style.width=((current/questions.length)*100)+"%";}
+function showQuestion(){
+  const q=questions[current];
+  document.getElementById("question").innerText=q.q;
+  const answersDiv=document.getElementById("answers");
+  answersDiv.innerHTML="";
+  q.a.forEach(ans=>{
+    const div=document.createElement("div");
+    div.className="option";
+    div.innerHTML=`<img src="${ans.img}" alt=""><p>${ans.text}</p>`;
+    div.onclick=()=>selectAnswer(ans.type);
+    answersDiv.appendChild(div);
+  });
+  updateProgress();
+}
+function selectAnswer(type){
+  score[type]++;
+  current++;
+  if(current<questions.length) showQuestion();
+  else showResult();
+}
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+  let sorted = Object.entries(score).sort((a,b)=>b[1]-a[1]);
+  let topType = sorted[0][0];
+  let html = `
+    <div class="result-card">
+      <h3>${results[topType].title}</h3>
+      <p>${results[topType].desc}</p>
+      <ul>${results[topType].points.map(p=>`<li>${p}</li>`).join("")}</ul>
+      <a href="${results[topType].link}" target="_blank">Дэлгэрэнгүй мэдээлэл</a>
+    </div>
+  `;
+  document.getElementById("resultText").innerHTML = html;
+  document.getElementById("progressBar").style.width = "100%";
+}
+function restartQuiz(){
+  current=0;
+  score={A:0,B:0,C:0,D:0};
+  document.getElementById("quiz").style.display="block";
+  document.getElementById("result").style.display="none";
+  showQuestion();
+}
+showQuestion();
+</script>
+</body>
+</html>
